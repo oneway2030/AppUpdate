@@ -21,21 +21,20 @@ import android.content.Context
 import android.content.DialogInterface
 import android.database.Cursor
 import android.graphics.drawable.Drawable
-import android.support.annotation.ArrayRes
-import android.support.annotation.DrawableRes
-import android.support.annotation.StringRes
-import android.support.v4.app.Fragment
-import android.support.v7.app.AlertDialog
 import android.view.KeyEvent
 import android.view.View
 import android.widget.ListAdapter
+import androidx.annotation.ArrayRes
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
 
 
-fun Fragment.dialog(
+fun androidx.fragment.app.Fragment.dialog(
         title: String? = null,
         message: String? = null,
         init: (KAlertDialogBuilder.() -> Unit)? = null
-) = activity.dialog(title, message, init)
+) = activity?.dialog(title, message, init)
 
 fun Context.dialog(
         title: String? = null,
@@ -47,11 +46,11 @@ fun Context.dialog(
     if (init != null) init()
 }
 
-fun Fragment.dialog(
+fun androidx.fragment.app.Fragment.dialog(
         @StringRes message: Int,
         @StringRes title: Int? = null,
         init: (KAlertDialogBuilder.() -> Unit)? = null
-) = activity.dialog(message, title, init)
+) = activity?.dialog(message, title, init)
 
 fun Context.dialog(
         @StringRes message: Int,
@@ -63,15 +62,15 @@ fun Context.dialog(
     if (init != null) init()
 }
 
-fun Fragment.dialog(init: KAlertDialogBuilder.() -> Unit): KAlertDialogBuilder = activity.dialog(init)
+fun androidx.fragment.app.Fragment.dialog(init: KAlertDialogBuilder.() -> Unit): KAlertDialogBuilder = activity?.dialog(init)!!
 
 fun Context.dialog(init: KAlertDialogBuilder.() -> Unit) = KAlertDialogBuilder(this).apply { init() }
 
-fun Fragment.progressDialog(
+fun androidx.fragment.app.Fragment.progressDialog(
         @StringRes message: Int? = null,
         @StringRes title: Int? = null,
         init: (ProgressDialog.() -> Unit)? = null
-) = activity.progressDialog(message, title, init)
+) = activity?.progressDialog(message, title, init)
 
 fun Context.progressDialog(
         @StringRes message: Int? = null,
@@ -79,11 +78,11 @@ fun Context.progressDialog(
         init: (ProgressDialog.() -> Unit)? = null
 ) = progressDialog(false, message?.let { getString(it) }, title?.let { getString(it) }, init)
 
-fun Fragment.indeterminateProgressDialog(
+fun androidx.fragment.app.Fragment.indeterminateProgressDialog(
         @StringRes message: Int? = null,
         @StringRes title: Int? = null,
         init: (ProgressDialog.() -> Unit)? = null
-) = activity.progressDialog(message, title, init)
+) = activity?.progressDialog(message, title, init)
 
 fun Context.indeterminateProgressDialog(
         @StringRes message: Int? = null,
@@ -91,11 +90,11 @@ fun Context.indeterminateProgressDialog(
         init: (ProgressDialog.() -> Unit)? = null
 ) = progressDialog(true, message?.let { getString(it) }, title?.let { getString(it) }, init)
 
-fun Fragment.progressDialog(
+fun androidx.fragment.app.Fragment.progressDialog(
         message: String? = null,
         title: String? = null,
         init: (ProgressDialog.() -> Unit)? = null
-) = activity.progressDialog(message, title, init)
+) = activity?.progressDialog(message, title, init)
 
 fun Context.progressDialog(
         message: String? = null,
@@ -103,11 +102,11 @@ fun Context.progressDialog(
         init: (ProgressDialog.() -> Unit)? = null
 ) = progressDialog(false, message, title, init)
 
-fun Fragment.indeterminateProgressDialog(
+fun androidx.fragment.app.Fragment.indeterminateProgressDialog(
         message: String? = null,
         title: String? = null,
         init: (ProgressDialog.() -> Unit)? = null
-) = activity.indeterminateProgressDialog(message, title, init)
+) = activity?.indeterminateProgressDialog(message, title, init)
 
 fun Context.indeterminateProgressDialog(
         message: String? = null,
@@ -129,11 +128,11 @@ private fun Context.progressDialog(
     show()
 }
 
-fun Fragment.sheet(
+fun androidx.fragment.app.Fragment.sheet(
         title: CharSequence? = null,
         items: List<CharSequence>,
         onClick: (Int) -> Unit
-) = activity.sheet(title, items, onClick)
+) = activity?.sheet(title, items, onClick)
 
 fun Context.sheet(
         title: CharSequence? = null,

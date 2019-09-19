@@ -10,17 +10,23 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Binder;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 import com.vector.update_app.HttpManager;
 import com.vector.update_app.R;
 import com.vector.update_app.UpdateAppBean;
+import com.vector.update_app.utils.ApkInstallUtils;
 import com.vector.update_app.utils.AppUpdateUtils;
+import com.vector.update_app.utils.FileUtil;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -64,7 +70,7 @@ public class DownloadService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mNotificationManager = (NotificationManager) getSystemService(android.content.Context.NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
@@ -138,7 +144,8 @@ public class DownloadService extends Service {
         }
 
         String target = appDir + File.separator + updateApp.getNewVersion();
-
+        //如果该文件存在则先删除后再重新去下载
+        FileUtil.deleteSingleFile(target + "/" + appName);
         updateApp.getHttpManager().download(apkUrl, target, appName, new FileDownloadCallBack(callback));
     }
 
@@ -153,10 +160,24 @@ public class DownloadService extends Service {
         close();
     }
 
+
     private void close() {
         stopSelf();
         isRunning = false;
     }
+
+    public void handleDelayTask(TimerTask timerTask, long delay) {
+        Timer timer = new Timer();
+        timer.schedule(timerTask, 1000);
+    }
+
+    TimerTask closeTimerTask = new TimerTask() {
+        @Override
+        public void run() {
+            close();
+        }
+    };
+
 
     /**
      * 进度条回调接口
@@ -289,51 +310,62 @@ public class DownloadService extends Service {
         }
 
         @Override
-        public void onResponse(File file) {
+        public void onResponse(final File file) {
             if (mCallBack != null) {
                 if (!mCallBack.onFinish(file)) {
                     close();
                     return;
                 }
             }
-
+            Log.i("test", "onResponse");
             try {
 
                 if (AppUpdateUtils.isAppOnForeground(DownloadService.this) || mBuilder == null) {
+                    Log.i("test", "App前台运行");
                     //App前台运行
                     mNotificationManager.cancel(NOTIFY_ID);
 
                     if (mCallBack != null) {
                         boolean temp = mCallBack.onInstallAppAndAppOnForeground(file);
                         if (!temp) {
-                            AppUpdateUtils.installApp(DownloadService.this, file);
+                            ApkInstallUtils.installNormal(DownloadService.this, file);
                         }
                     } else {
-                        AppUpdateUtils.installApp(DownloadService.this, file);
+                        ApkInstallUtils.installNormal(DownloadService.this, file);
                     }
 
 
                 } else {
+                    Log.i("test", "下载完成，请点击安装");
                     //App后台运行
                     //更新参数,注意flags要使用FLAG_UPDATE_CURRENT
-                    Intent installAppIntent = AppUpdateUtils.getInstallAppIntent(DownloadService.this, file);
-                    PendingIntent contentIntent = PendingIntent.getActivity(DownloadService.this, 0, installAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                    mBuilder.setContentIntent(contentIntent)
-                            .setContentTitle(AppUpdateUtils.getAppName(DownloadService.this))
-                            .setContentText("下载完成，请点击安装")
-                            .setProgress(0, 0, false)
-                            //                        .setAutoCancel(true)
-                            .setDefaults((Notification.DEFAULT_ALL));
-                    Notification notification = mBuilder.build();
-                    notification.flags = Notification.FLAG_AUTO_CANCEL;
-                    mNotificationManager.notify(NOTIFY_ID, notification);
+                    TimerTask timerTask = new TimerTask() {
+                        @Override
+                        public void run() {
+                            Intent installAppIntent = ApkInstallUtils.getInstallAppIntent(DownloadService.this, file);
+//                    Intent installAppIntent = AppUpdateUtils.getInstallAppIntent(DownloadService.this, file);
+                            PendingIntent contentIntent = PendingIntent.getActivity(DownloadService.this, 0, installAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                            mBuilder.setContentIntent(contentIntent)
+                                    .setContentTitle(AppUpdateUtils.getAppName(DownloadService.this))
+                                    .setContentText("下载完成，请点击安装")
+                                    .setProgress(0, 0, false)
+                                    //                        .setAutoCancel(true)
+                                    .setDefaults((Notification.DEFAULT_ALL));
+                            Notification notification = mBuilder.build();
+                            notification.flags = Notification.FLAG_AUTO_CANCEL;
+                            mNotificationManager.notify(NOTIFY_ID, notification);
+                        }
+                    };
+                    //延迟执行,防止部分手机 因为下载速度过快,而造成NotificationManager.notify 过于频繁 而导致不显示 下载完成
+                    handleDelayTask(timerTask, 300);
                 }
-                //下载完自杀
-                close();
+//                //下载完自杀
+//                close();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                close();
+                handleDelayTask(closeTimerTask, 800);
+//                close();
             }
         }
     }

@@ -7,19 +7,21 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
-import android.support.annotation.DrawableRes;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentActivity;
 
 import com.vector.update_app.listener.ExceptionHandler;
 import com.vector.update_app.listener.ExceptionHandlerHelper;
 import com.vector.update_app.listener.IUpdateDialogFragmentListener;
 import com.vector.update_app.service.DownloadService;
 import com.vector.update_app.utils.AppUpdateUtils;
+import com.vector.update_app.utils.FileUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +65,7 @@ public class UpdateAppManager {
         mTopPic = builder.getTopPic();
 
         mIgnoreDefParams = builder.isIgnoreDefParams();
-        if(!mIgnoreDefParams) {
+        if (!mIgnoreDefParams) {
             mAppKey = builder.getAppKey();
         }
         mTargetPath = builder.getTargetPath();
@@ -157,7 +159,7 @@ public class UpdateAppManager {
 
         if (TextUtils.isEmpty(mTargetPath)
 //                || !mTargetPath.startsWith(preSuffix)
-                ) {
+        ) {
             Log.e(TAG, "下载路径错误:" + mTargetPath);
             return true;
         }
@@ -228,7 +230,7 @@ public class UpdateAppManager {
 
         //拼接参数
         Map<String, String> params = new HashMap<String, String>();
-        if(!mIgnoreDefParams) {
+        if (!mIgnoreDefParams) {
             if (!TextUtils.isEmpty(mAppKey)) {
                 params.put("appKey", mAppKey);
             }
@@ -525,7 +527,8 @@ public class UpdateAppManager {
         }
 
         /**
-         *  设置默认的UpdateDialogFragment监听器
+         * 设置默认的UpdateDialogFragment监听器
+         *
          * @param updateDialogFragmentListener updateDialogFragmentListener 更新对话框关闭监听
          * @return Builder
          */
@@ -542,21 +545,23 @@ public class UpdateAppManager {
             if (getActivity() == null || getHttpManager() == null || TextUtils.isEmpty(getUpdateUrl())) {
                 throw new NullPointerException("必要参数不能为空");
             }
-            if (TextUtils.isEmpty(getTargetPath())) {
-                //sd卡是否存在
-                String path = "";
-                if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED) || !Environment.isExternalStorageRemovable()) {
+            String path = "";
+            if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
+                if (TextUtils.isEmpty(getTargetPath())) {
                     try {
-                        path = getActivity().getExternalCacheDir().getAbsolutePath();
+                        path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download";
+                        FileUtil.isFolderExists(path);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    if (TextUtils.isEmpty(path)) {
-                        path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
-                    }
                 } else {
-                    path = getActivity().getCacheDir().getAbsolutePath();
+                    FileUtil.isFolderExists(getTargetPath());
                 }
+            } else {
+                path = getActivity().getExternalCacheDir().getAbsolutePath(); ///data/data/<application package>/cache
+//                path = getActivity().getCacheDir().getAbsolutePath();///data/data/<application package>/files
+            }
+            if (!TextUtils.isEmpty(path)) {
                 setTargetPath(path);
             }
             if (TextUtils.isEmpty(getAppKey())) {
@@ -568,9 +573,9 @@ public class UpdateAppManager {
             return new UpdateAppManager(this);
         }
 
+
         /**
          * 是否隐藏对话框下载进度条
-         *
          *
          * @return Builder
          */

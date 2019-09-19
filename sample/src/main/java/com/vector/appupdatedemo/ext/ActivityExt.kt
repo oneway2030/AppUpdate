@@ -19,8 +19,8 @@
 package com.vector.appupdatedemo.ext
 
 import android.app.Activity
-import android.support.annotation.IdRes
-import android.support.annotation.StringRes
+import androidx.annotation.IdRes
+import androidx.annotation.StringRes
 import android.view.View
 import android.widget.Toast
 

@@ -11,10 +11,6 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -30,10 +26,16 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+
 import com.vector.update_app.listener.ExceptionHandler;
 import com.vector.update_app.listener.ExceptionHandlerHelper;
 import com.vector.update_app.listener.IUpdateDialogFragmentListener;
 import com.vector.update_app.service.DownloadService;
+import com.vector.update_app.utils.ApkInstallUtils;
 import com.vector.update_app.utils.AppUpdateUtils;
 import com.vector.update_app.utils.ColorUtil;
 import com.vector.update_app.utils.DrawableUtil;
@@ -102,7 +104,6 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
 
 
         mActivity = getActivity();
-
 
 
     }
@@ -328,7 +329,7 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
 
     private void installApp() {
         if (AppUpdateUtils.appIsDownloaded(mUpdateApp)) {
-            AppUpdateUtils.installApp(UpdateDialogFragment.this, AppUpdateUtils.getAppFile(mUpdateApp));
+            ApkInstallUtils.installNormal(UpdateDialogFragment.this.getActivity(), AppUpdateUtils.getAppFile(mUpdateApp));
             //安装完自杀
             //如果上次是强制更新，但是用户在下载完，强制杀掉后台，重新启动app后，则会走到这一步，所以要进行强制更新的判断。
             if (!mUpdateApp.isConstraint()) {
@@ -432,7 +433,7 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
                         dismiss();
                     }
                     if (mActivity != null) {
-                        AppUpdateUtils.installApp(mActivity, file);
+                        ApkInstallUtils.installNormal(mActivity, file);
                         //返回 true ，自己处理。
                         return true;
                     } else {
@@ -451,7 +452,7 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
         mUpdateOkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AppUpdateUtils.installApp(UpdateDialogFragment.this, file);
+                ApkInstallUtils.installNormal(UpdateDialogFragment.this.getActivity(), file);
             }
         });
     }

@@ -1,0 +1,3 @@
+//在需要检测的地方调用
+
+  UpdateManger.checkVersionUpdate(this);

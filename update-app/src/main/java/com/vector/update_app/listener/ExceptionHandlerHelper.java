@@ -5,7 +5,7 @@ package com.vector.update_app.listener;
  * on 2018/4/9.
  */
 public class ExceptionHandlerHelper {
-    private static  ExceptionHandler instance;
+    private static ExceptionHandler instance;
     public static void init(ExceptionHandler exceptionHandler) {
         ExceptionHandler temp = instance;
         if (temp == null) {

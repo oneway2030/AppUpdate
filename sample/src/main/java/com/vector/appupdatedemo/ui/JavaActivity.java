@@ -6,12 +6,13 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.vector.appupdatedemo.R;
 import com.vector.appupdatedemo.http.OkGoUpdateHttpUtil;
@@ -25,6 +26,7 @@ import com.vector.update_app.UpdateCallback;
 import com.vector.update_app.listener.ExceptionHandler;
 import com.vector.update_app.listener.IUpdateDialogFragmentListener;
 import com.vector.update_app.service.DownloadService;
+import com.vector.update_app.utils.ApkInstallUtils;
 import com.vector.update_app.utils.AppUpdateUtils;
 import com.vector.update_app.utils.DrawableUtil;
 
@@ -65,7 +67,7 @@ public class JavaActivity extends AppCompatActivity {
             case Activity.RESULT_CANCELED:
                 switch (requestCode){
                     // 得到通过UpdateDialogFragment默认dialog方式安装，用户取消安装的回调通知，以便用户自己去判断，比如这个更新如果是强制的，但是用户下载之后取消了，在这里发起相应的操作
-                    case AppUpdateUtils.REQ_CODE_INSTALL_APP:
+                    case ApkInstallUtils.REQUEST_CODE_INSTALL_APP:
                         Toast.makeText(this,"用户取消了安装包的更新", Toast.LENGTH_LONG).show();
                         break;
                 }
@@ -538,7 +540,7 @@ public class JavaActivity extends AppCompatActivity {
                 .setPositiveButton("安装", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        AppUpdateUtils.installApp(JavaActivity.this, appFile);
+                        ApkInstallUtils.installNormal(JavaActivity.this, appFile);
                         dialog.dismiss();
                     }
                 })
