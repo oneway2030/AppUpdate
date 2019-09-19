@@ -33,7 +33,7 @@ dependencies {
     androidTestImplementation lib.runner
     androidTestImplementation lib.espresso_core
     implementation lib.junit
-    implementation lib.constraint
+    implementation lib.constraintlayout
     implementation lib.v7
     implementation lib.gson
     implementation project(':update-app-kotlin')

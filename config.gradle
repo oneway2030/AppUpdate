@@ -20,7 +20,7 @@ ext {
             versionName         : "1.0.0",
             minSdkVersion       : 19,
             targetSdkVersion    : 28,
-            compileSdkVersion   : 28,//低于28就会报AAPT2错误，暂时还找不到原因
+            compileSdkVersion   : 28,
             jdkVersion          : "1.7",
             excludeDependencies : "com.android.support",
             excludeRx           : "io.reactivex.rxjava2",
