@@ -26,11 +26,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
-
 import com.vector.update_app.listener.ExceptionHandler;
 import com.vector.update_app.listener.ExceptionHandlerHelper;
 import com.vector.update_app.listener.IUpdateDialogFragmentListener;
@@ -42,6 +37,11 @@ import com.vector.update_app.utils.DrawableUtil;
 import com.vector.update_app.view.NumberProgressBar;
 
 import java.io.File;
+
+import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 
 /**
  * Created by Vector
@@ -272,8 +272,8 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
         mUpdateOkButton.setBackgroundDrawable(DrawableUtil.getDrawable(AppUpdateUtils.dip2px(4, getActivity()), color));
         mNumberProgressBar.setProgressTextColor(color);
         mNumberProgressBar.setReachedBarColor(color);
-        //随背景颜色变化
-        mUpdateOkButton.setTextColor(ColorUtil.isTextColorDark(color) ? Color.BLACK : Color.WHITE);
+        //TODO 随背景颜色变化  深色和浅色都是白色文字
+        mUpdateOkButton.setTextColor(ColorUtil.isTextColorDark(color) ? Color.WHITE : Color.WHITE);
     }
 
     private void initEvents() {

@@ -9,13 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Binder;
+import android.os.Handler;
 import android.os.IBinder;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
-
-import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
 
 import com.vector.update_app.HttpManager;
 import com.vector.update_app.R;
@@ -25,8 +23,9 @@ import com.vector.update_app.utils.AppUpdateUtils;
 import com.vector.update_app.utils.FileUtil;
 
 import java.io.File;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 
 /**
@@ -166,18 +165,19 @@ public class DownloadService extends Service {
         isRunning = false;
     }
 
-    public void handleDelayTask(TimerTask timerTask, long delay) {
-        Timer timer = new Timer();
-        timer.schedule(timerTask, 1000);
+    private Handler mHandler = new Handler();
+
+    public void handleDelayTask(Runnable runnable, long delay) {
+        mHandler.postDelayed(runnable, delay);
     }
 
-    TimerTask closeTimerTask = new TimerTask() {
+
+    Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
             close();
         }
     };
-
 
     /**
      * 进度条回调接口
@@ -276,8 +276,8 @@ public class DownloadService extends Service {
                     mCallBack.setMax(total);
                     mCallBack.onProgress(progress, total);
                 }
-
-                if (mBuilder != null) {
+                //TODO 2020/5/4 这里 rate % 4 == 0  更新25次，减少NotificationManager.notify， 防止部分手机频繁通知通知栏造成不显示
+                if (mBuilder != null && rate % 4 == 0) {
                     mBuilder.setContentTitle("正在下载：" + AppUpdateUtils.getAppName(DownloadService.this))
                             .setContentText(rate + "%")
                             .setProgress(100, rate, false)
@@ -334,39 +334,43 @@ public class DownloadService extends Service {
                         ApkInstallUtils.installNormal(DownloadService.this, file);
                     }
 
-
                 } else {
                     Log.i("test", "下载完成，请点击安装");
                     //App后台运行
+                    //TODO 延迟执行,防止部分手机 因为下载速度过快,而造成NotificationManager.notify 过于频繁 而导致不显示 下载完成
                     //更新参数,注意flags要使用FLAG_UPDATE_CURRENT
-                    TimerTask timerTask = new TimerTask() {
-                        @Override
-                        public void run() {
-                            Intent installAppIntent = ApkInstallUtils.getInstallAppIntent(DownloadService.this, file);
+                    Intent installAppIntent = ApkInstallUtils.getInstallAppIntent(DownloadService.this, file);
 //                    Intent installAppIntent = AppUpdateUtils.getInstallAppIntent(DownloadService.this, file);
-                            PendingIntent contentIntent = PendingIntent.getActivity(DownloadService.this, 0, installAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                            mBuilder.setContentIntent(contentIntent)
-                                    .setContentTitle(AppUpdateUtils.getAppName(DownloadService.this))
-                                    .setContentText("下载完成，请点击安装")
-                                    .setProgress(0, 0, false)
-                                    //                        .setAutoCancel(true)
-                                    .setDefaults((Notification.DEFAULT_ALL));
-                            Notification notification = mBuilder.build();
-                            notification.flags = Notification.FLAG_AUTO_CANCEL;
-                            mNotificationManager.notify(NOTIFY_ID, notification);
-                        }
-                    };
-                    //延迟执行,防止部分手机 因为下载速度过快,而造成NotificationManager.notify 过于频繁 而导致不显示 下载完成
-                    handleDelayTask(timerTask, 300);
+                    PendingIntent contentIntent = PendingIntent.getActivity(DownloadService.this, 0, installAppIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+                    mBuilder.setContentIntent(contentIntent)
+                            .setContentTitle(AppUpdateUtils.getAppName(DownloadService.this))
+                            .setContentText("下载完成，请点击安装")
+                            .setProgress(0, 0, false)
+                            //                        .setAutoCancel(true)
+                            .setDefaults((Notification.DEFAULT_ALL));
+                    Notification notification = mBuilder.build();
+                    notification.flags = Notification.FLAG_AUTO_CANCEL;
+                    mNotificationManager.notify(NOTIFY_ID, notification);
                 }
 //                //下载完自杀
-//                close();
+                close();
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                handleDelayTask(closeTimerTask, 800);
-//                close();
+                close();
+//                handleDelayTask(mRunnable, 1000);
             }
         }
     }
+
+//    private Runnable getRunnable(final File file) {
+//        return new Runnable() {
+//            @Override
+//            public void run() {
+//
+//
+//            }
+//        };
+//
+//    }
 }
